@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 import uuid
-from pathlib import Path
 
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -22,7 +21,7 @@ from app.core.database import Base, get_db
 from app.core.security import create_access_token, hash_password
 from app.core.limiter import limiter
 from app.main import app
-from app.models import Category, Transaction, TransactionType, User, UserRole
+from app.models import Category, User, UserRole
 
 
 engine = create_engine(

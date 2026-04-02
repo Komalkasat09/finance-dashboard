@@ -18,9 +18,9 @@ depends_on = None
 
 
 def upgrade() -> None:
-    user_role = sa.Enum("VIEWER", "ANALYST", "ADMIN", name="user_role")
-    transaction_type = sa.Enum("INCOME", "EXPENSE", name="transaction_type")
-    audit_action = sa.Enum("CREATE", "UPDATE", "DELETE", "LOGIN", "LOGOUT", name="audit_action")
+    user_role = sa.dialects.postgresql.ENUM("VIEWER", "ANALYST", "ADMIN", name="user_role", create_type=False)
+    transaction_type = sa.dialects.postgresql.ENUM("INCOME", "EXPENSE", name="transaction_type", create_type=False)
+    audit_action = sa.dialects.postgresql.ENUM("CREATE", "UPDATE", "DELETE", "LOGIN", "LOGOUT", name="audit_action", create_type=False)
     uuid_type = sa.dialects.postgresql.UUID(as_uuid=True)
 
     bind = op.get_bind()

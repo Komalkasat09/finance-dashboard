@@ -2,12 +2,11 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { AxiosError } from "axios"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { useQueryClient } from "@tanstack/react-query"
-import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -16,31 +15,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { api } from "@/lib/api"
-import { isAuthenticated, setTokens } from "@/lib/auth"
-import type { UserRole } from "@/types"
+import { isAuthenticated } from "@/lib/auth"
 
-
-const schema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-})
+const schema = z
+  .object({
+    full_name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Enter a valid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(8, "Confirm your password"),
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
 
 type FormValues = z.infer<typeof schema>
 
-const roleRedirect: Record<UserRole, string> = {
-  ADMIN: "/users",
-  ANALYST: "/transactions",
-  VIEWER: "/dashboard",
-}
-
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter()
-  const queryClient = useQueryClient()
   const [isPending, setIsPending] = React.useState(false)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: {
+      full_name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
   })
 
   React.useEffect(() => {
@@ -52,18 +54,23 @@ export default function LoginPage() {
   const onSubmit = form.handleSubmit(async (values) => {
     setIsPending(true)
     try {
-      const response = await api.post("/auth/login", values)
-      const { access_token, refresh_token, user } = response.data
-      setTokens(access_token, refresh_token)
-      queryClient.setQueryData(["current-user"], user)
-      router.replace(roleRedirect[user.role as UserRole] ?? "/dashboard")
+      await api.post("/auth/register", {
+        email: values.email,
+        password: values.password,
+        full_name: values.full_name,
+      })
+
+      toast.success("Account created", {
+        description: "You can now sign in with your new account.",
+      })
+      router.replace("/login")
     } catch (error) {
       const message =
         error instanceof AxiosError
           ? (error.response?.data?.detail?.message as string | undefined)
           : undefined
-      toast.error("Login failed", {
-        description: message ?? "Check your credentials and try again.",
+      toast.error("Sign up failed", {
+        description: message ?? "Try a different email or check your details.",
       })
     } finally {
       setIsPending(false)
@@ -72,18 +79,23 @@ export default function LoginPage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-4 py-12 text-white">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.25),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.18),_transparent_30%),linear-gradient(135deg,_#020617,_#0f172a_45%,_#111827)]" />
-      <div className="absolute left-1/4 top-1/4 h-72 w-72 rounded-full bg-emerald-500/20 blur-3xl animate-pulse" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_rgba(20,184,166,0.22),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(59,130,246,0.18),_transparent_35%),linear-gradient(140deg,_#020617,_#0f172a_45%,_#111827)]" />
+      <div className="absolute left-1/4 top-1/4 h-72 w-72 rounded-full bg-teal-500/20 blur-3xl animate-pulse" />
       <div className="absolute bottom-1/4 right-1/4 h-80 w-80 rounded-full bg-sky-500/10 blur-3xl animate-pulse [animation-delay:1.5s]" />
 
       <Card className="relative w-full max-w-md border-slate-800 bg-slate-900/90 text-white shadow-2xl shadow-black/40 backdrop-blur-xl">
         <CardHeader className="space-y-3">
           <div className="font-mono text-2xl font-semibold tracking-tight">FinanceDash</div>
-          <CardTitle>Sign in</CardTitle>
-          <CardDescription className="text-slate-400">Access the financial control plane with your corporate credentials.</CardDescription>
+          <CardTitle>Create account</CardTitle>
+          <CardDescription className="text-slate-400">Open your personal finance workspace in under a minute.</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={onSubmit}>
+            <div className="space-y-2">
+              <Label htmlFor="full_name">Full name</Label>
+              <Input id="full_name" className="border-slate-700 bg-slate-950 text-white" {...form.register("full_name")} />
+              {form.formState.errors.full_name ? <p className="text-sm text-rose-400">{form.formState.errors.full_name.message}</p> : null}
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" className="border-slate-700 bg-slate-950 text-white" {...form.register("email")} />
@@ -94,14 +106,19 @@ export default function LoginPage() {
               <Input id="password" type="password" className="border-slate-700 bg-slate-950 text-white" {...form.register("password")} />
               {form.formState.errors.password ? <p className="text-sm text-rose-400">{form.formState.errors.password.message}</p> : null}
             </div>
-            <Button className="w-full bg-emerald-500 text-slate-950 hover:bg-emerald-400" disabled={isPending} type="submit">
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm password</Label>
+              <Input id="confirmPassword" type="password" className="border-slate-700 bg-slate-950 text-white" {...form.register("confirmPassword")} />
+              {form.formState.errors.confirmPassword ? <p className="text-sm text-rose-400">{form.formState.errors.confirmPassword.message}</p> : null}
+            </div>
+            <Button className="w-full bg-teal-500 text-slate-950 hover:bg-teal-400" disabled={isPending} type="submit">
               {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              {isPending ? "Signing in" : "Sign in"}
+              {isPending ? "Creating account" : "Create account"}
             </Button>
             <p className="text-center text-sm text-slate-400">
-              New here?{" "}
-              <Link href="/signup" className="text-emerald-300 underline-offset-4 hover:underline">
-                Create an account
+              Already have an account?{" "}
+              <Link href="/login" className="text-teal-300 underline-offset-4 hover:underline">
+                Sign in
               </Link>
             </p>
           </form>

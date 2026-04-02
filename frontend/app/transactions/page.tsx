@@ -18,15 +18,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { api } from "@/lib/api"
-import type { PaginatedResponse, Transaction, TransactionType, User } from "@/types"
+import type { Category, PaginatedResponse, Transaction, TransactionType, User } from "@/types"
 
-
-const categories = ["Salary", "Freelance", "Rent", "Food", "Transport", "Utilities", "Healthcare", "Entertainment"]
 
 const schema = z.object({
   amount: z.coerce.number().positive(),
   type: z.enum(["INCOME", "EXPENSE"]),
-  category_name: z.string().min(1),
+  category_id: z.string().uuid().nullable(),
   date: z.string().min(1),
   notes: z.string().optional(),
 })
@@ -69,31 +67,49 @@ export default function TransactionsPage() {
     },
   })
 
+  const categoriesQuery = useQuery<Category[]>({
+    queryKey: ["categories"],
+    queryFn: async () => (await api.get("/categories")).data,
+  })
+
+  const firstCategoryId = categoriesQuery.data?.[0]?.id ?? null
+
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { amount: 0, type: "EXPENSE", category_name: categories[0], date: new Date().toISOString().slice(0, 10), notes: "" },
+    defaultValues: { amount: 0, type: "EXPENSE", category_id: null, date: new Date().toISOString().slice(0, 10), notes: "" },
   })
   const watchedType = useWatch({ control: form.control, name: "type" })
-  const watchedCategoryName = useWatch({ control: form.control, name: "category_name" })
+  const watchedCategoryId = useWatch({ control: form.control, name: "category_id" })
 
   React.useEffect(() => {
     if (editing) {
       form.reset({
         amount: Number(editing.amount),
         type: editing.type,
-        category_name: editing.category_name ?? categories[0],
+        category_id: editing.category_id,
         date: editing.date,
         notes: editing.notes ?? "",
       })
+      return
     }
-  }, [editing, form])
+
+    if (dialogOpen) {
+      form.reset({
+        amount: 0,
+        type: "EXPENSE",
+        category_id: firstCategoryId,
+        date: new Date().toISOString().slice(0, 10),
+        notes: "",
+      })
+    }
+  }, [dialogOpen, editing, firstCategoryId, form])
 
   const upsertMutation = useMutation({
     mutationFn: async (values: FormValues) => {
       const payload = {
         amount: values.amount,
         type: values.type,
-        category_id: null,
+        category_id: values.category_id,
         date: values.date,
         notes: values.notes || null,
       }
@@ -139,8 +155,7 @@ export default function TransactionsPage() {
   const canMutate = me.data?.role === "ADMIN" || me.data?.role === "ANALYST"
 
   const submitForm = form.handleSubmit((values) => {
-    const mapped = { ...values, category_id: null }
-    upsertMutation.mutate(mapped)
+    upsertMutation.mutate(values)
   })
 
   return (
@@ -177,8 +192,8 @@ export default function TransactionsPage() {
               <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">All</SelectItem>
-                {categories.map((item) => (
-                  <SelectItem key={item} value={item}>{item}</SelectItem>
+                {(categoriesQuery.data ?? []).map((item) => (
+                  <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -267,10 +282,10 @@ export default function TransactionsPage() {
               </div>
               <div className="space-y-2">
                 <Label>Category</Label>
-                <Select value={watchedCategoryName} onValueChange={(value) => form.setValue("category_name", value)}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select value={watchedCategoryId ?? ""} onValueChange={(value) => form.setValue("category_id", value || null)}>
+                  <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
                   <SelectContent>
-                    {categories.map((item) => <SelectItem key={item} value={item}>{item}</SelectItem>)}
+                    {(categoriesQuery.data ?? []).map((item) => <SelectItem key={item.id} value={item.id}>{item.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>

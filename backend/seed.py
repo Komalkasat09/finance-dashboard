@@ -3,7 +3,6 @@ from __future__ import annotations
 import random
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
-from pathlib import Path
 
 from faker import Faker
 from sqlalchemy import create_engine
@@ -76,12 +75,10 @@ def main() -> None:
 
     session.commit()
 
-    categories: list[Category] = []
     category_map: dict[str, Category] = {}
     for name, color_hex, icon, _, _ in CATEGORY_SEEDS:
         category = Category(name=name, color_hex=color_hex, icon=icon)
         session.add(category)
-        categories.append(category)
         category_map[name] = category
 
     session.commit()

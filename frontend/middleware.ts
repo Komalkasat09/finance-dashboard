@@ -4,12 +4,13 @@ import { NextResponse, type NextRequest } from "next/server"
 export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("access_token")?.value
   const { pathname } = request.nextUrl
+  const isAuthRoute = pathname === "/login" || pathname === "/signup"
 
-  if (!accessToken && pathname !== "/login") {
+  if (!accessToken && !isAuthRoute) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
-  if (accessToken && pathname === "/login") {
+  if (accessToken && isAuthRoute) {
     return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 

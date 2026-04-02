@@ -8,6 +8,7 @@ from slowapi.middleware import SlowAPIMiddleware
 
 from app.api.v1.auth import router as auth_router
 from app.api.v1.analytics import router as analytics_router
+from app.api.v1.categories import router as categories_router
 from app.api.v1.transactions import router as transactions_router
 from app.api.v1.users import router as users_router
 from app.core.limiter import limiter
@@ -46,12 +47,18 @@ def generic_exception_handler(_, exc: Exception):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(categories_router, prefix="/api/v1")
 app.include_router(transactions_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
