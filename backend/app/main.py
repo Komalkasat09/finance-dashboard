@@ -7,6 +7,9 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
 from app.api.v1.auth import router as auth_router
+from app.api.v1.analytics import router as analytics_router
+from app.api.v1.transactions import router as transactions_router
+from app.api.v1.users import router as users_router
 from app.core.limiter import limiter
 from app.models import AuditLog, Category, RefreshToken, Transaction, User
 
@@ -49,6 +52,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(auth_router, prefix="/api/v1")
+app.include_router(transactions_router, prefix="/api/v1")
+app.include_router(analytics_router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")
 
 
 @app.get("/")

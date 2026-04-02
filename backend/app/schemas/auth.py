@@ -1,17 +1,18 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.models import UserRole
+from app.models.user import UserRole
 
 
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
-    full_name: str | None = None
+    full_name: Optional[str] = None
 
 
 class LoginRequest(BaseModel):
@@ -28,7 +29,7 @@ class UserOut(BaseModel):
 
     id: UUID
     email: EmailStr
-    full_name: str | None
+    full_name: Optional[str]
     role: UserRole
     is_active: bool
     created_at: datetime

@@ -32,7 +32,7 @@ def _build_token_response(user: User, access_token: str, refresh_token: str) -> 
 
 
 def _refresh_expires_at() -> datetime:
-    return datetime.now(UTC) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    return datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
 
 def register_user(db: Session, data: RegisterRequest) -> User:
@@ -99,7 +99,7 @@ def refresh_tokens(db: Session, refresh_token: str) -> TokenResponse:
     if refresh_record is None:
         raise unauthorized("INVALID_REFRESH_TOKEN", "Refresh token is invalid")
 
-    if refresh_record.revoked or refresh_record.expires_at <= datetime.now(UTC):
+    if refresh_record.revoked or refresh_record.expires_at <= datetime.utcnow():
         raise unauthorized("REFRESH_TOKEN_EXPIRED", "Refresh token is expired or revoked")
 
     refresh_record.revoked = True
