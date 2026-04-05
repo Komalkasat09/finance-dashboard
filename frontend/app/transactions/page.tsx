@@ -22,7 +22,7 @@ import type { Category, PaginatedResponse, Transaction, TransactionType, User } 
 
 
 const schema = z.object({
-  amount: z.coerce.number().positive(),
+  amount: z.number().positive(),
   type: z.enum(["INCOME", "EXPENSE"]),
   category_id: z.string().uuid().nullable(),
   date: z.string().min(1),
