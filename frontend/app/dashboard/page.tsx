@@ -91,7 +91,7 @@ export default function DashboardPage() {
                             <Cell key={entry.category_name} fill={entry.color_hex} />
                           ))}
                         </Pie>
-                        <Tooltip formatter={(value: number) => formatAmount(value)} />
+                        <Tooltip formatter={(value) => typeof value === 'number' ? formatAmount(value) : value} />
                         <Legend />
                       </PieChart>
                     </ResponsiveContainer>
