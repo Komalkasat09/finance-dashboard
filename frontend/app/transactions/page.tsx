@@ -74,17 +74,15 @@ export default function TransactionsPage() {
 
   const firstCategoryId = categoriesQuery.data?.[0]?.id ?? null
 
-  const defaultFormValues: FormValues = { 
-    amount: 0, 
-    type: "EXPENSE", 
-    category_id: null, 
-    date: new Date().toISOString().slice(0, 10), 
-    notes: "" 
-  }
-
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: defaultFormValues,
+    defaultValues: {
+      amount: 0,
+      type: "EXPENSE",
+      category_id: null,
+      date: new Date().toISOString().slice(0, 10),
+      notes: "",
+    } satisfies FormValues,
   })
   const watchedType = useWatch({ control: form.control, name: "type" })
   const watchedCategoryId = useWatch({ control: form.control, name: "category_id" })
