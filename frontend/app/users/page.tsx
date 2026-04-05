@@ -26,10 +26,10 @@ const roleColors: Record<string, string> = {
 export default function UsersPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const currentUserQuery = useQuery<User>({ queryKey: ["current-user"], queryFn: async () => (await api.get("/auth/me")).data })
+  const currentUserQuery = useQuery<User>({ queryKey: ["current-user"], queryFn: async () => (await api.get<User>("/auth/me")).data })
   const usersQuery = useQuery<PaginatedResponse<User> | User[]>({
     queryKey: ["users"],
-    queryFn: async () => (await api.get("/users")).data,
+    queryFn: async () => (await api.get<PaginatedResponse<User> | User[]>("/users")).data,
   })
 
   React.useEffect(() => {

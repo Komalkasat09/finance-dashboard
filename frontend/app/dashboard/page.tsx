@@ -24,7 +24,7 @@ function formatAmount(value: string | number) {
 export default function DashboardPage() {
   const { data, isLoading, error, refetch } = useQuery<DashboardResponse>({
     queryKey: ["dashboard"],
-    queryFn: async () => (await api.get("/analytics/dashboard")).data,
+    queryFn: async () => (await api.get<DashboardResponse>("/analytics/dashboard")).data,
   })
 
   return (

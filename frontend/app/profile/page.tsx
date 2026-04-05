@@ -33,7 +33,7 @@ type FormValues = z.infer<typeof schema>
 export default function ProfilePage() {
   const currentUserQuery = useQuery<User>({
     queryKey: ["current-user"],
-    queryFn: async () => (await api.get("/auth/me")).data,
+    queryFn: async () => (await api.get<User>("/auth/me")).data,
   })
 
   const form = useForm<FormValues>({

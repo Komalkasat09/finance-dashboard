@@ -3,7 +3,6 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { AxiosError } from "axios"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -66,8 +65,8 @@ export default function SignupPage() {
       router.replace("/login")
     } catch (error) {
       const message =
-        error instanceof AxiosError
-          ? (error.response?.data?.detail?.message as string | undefined)
+        typeof error === "object" && error !== null
+          ? ((error as { response?: { data?: { detail?: { message?: string } } } }).response?.data?.detail?.message ?? undefined)
           : undefined
       toast.error("Sign up failed", {
         description: message ?? "Try a different email or check your details.",

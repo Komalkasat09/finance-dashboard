@@ -46,13 +46,13 @@ export default function TransactionsPage() {
 
   const me = useQuery<User>({
     queryKey: ["current-user"],
-    queryFn: async () => (await api.get("/auth/me")).data,
+    queryFn: async () => (await api.get<User>("/auth/me")).data,
   })
 
   const transactions = useQuery<PaginatedResponse<Transaction>>({
     queryKey: ["transactions", page, pageSize, type, category, dateFrom, dateTo, search],
     queryFn: async () => {
-      const response = await api.get("/transactions", {
+      const response = await api.get<PaginatedResponse<Transaction>>("/transactions", {
         params: {
           page,
           page_size: pageSize,
@@ -69,7 +69,7 @@ export default function TransactionsPage() {
 
   const categoriesQuery = useQuery<Category[]>({
     queryKey: ["categories"],
-    queryFn: async () => (await api.get("/categories")).data,
+    queryFn: async () => (await api.get<Category[]>("/categories")).data,
   })
 
   const firstCategoryId = categoriesQuery.data?.[0]?.id ?? null
@@ -143,7 +143,7 @@ export default function TransactionsPage() {
         },
         responseType: "blob",
       })
-      const blob = new Blob([response.data], { type: "text/csv" })
+      const blob = new Blob([response.data as BlobPart], { type: "text/csv" })
       const url = URL.createObjectURL(blob)
       const anchor = document.createElement("a")
       anchor.href = url

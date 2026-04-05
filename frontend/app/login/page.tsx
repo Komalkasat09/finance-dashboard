@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { AxiosError } from "axios"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -17,7 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { api } from "@/lib/api"
 import { isAuthenticated, setTokens } from "@/lib/auth"
-import type { UserRole } from "@/types"
+import type { User, UserRole } from "@/types"
 
 
 const schema = z.object({
@@ -52,15 +51,15 @@ export default function LoginPage() {
   const onSubmit = form.handleSubmit(async (values) => {
     setIsPending(true)
     try {
-      const response = await api.post("/auth/login", values)
+      const response = await api.post<{ access_token: string; refresh_token: string; user: User }>("/auth/login", values)
       const { access_token, refresh_token, user } = response.data
       setTokens(access_token, refresh_token)
       queryClient.setQueryData(["current-user"], user)
       router.replace(roleRedirect[user.role as UserRole] ?? "/dashboard")
     } catch (error) {
       const message =
-        error instanceof AxiosError
-          ? (error.response?.data?.detail?.message as string | undefined)
+        typeof error === "object" && error !== null
+          ? ((error as { response?: { data?: { detail?: { message?: string } } } }).response?.data?.detail?.message ?? undefined)
           : undefined
       toast.error("Login failed", {
         description: message ?? "Check your credentials and try again.",

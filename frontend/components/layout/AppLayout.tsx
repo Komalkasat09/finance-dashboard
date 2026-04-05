@@ -33,7 +33,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: currentUser, isLoading, isError } = useQuery<User>({
     queryKey: ["current-user"],
     queryFn: async () => {
-      const response = await api.get("/auth/me")
+      const response = await api.get<User>("/auth/me")
       return response.data
     },
     enabled: isAuthenticated(),
