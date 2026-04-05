@@ -30,6 +30,7 @@ const schema = z.object({
 })
 
 type FormValues = z.infer<typeof schema>
+type FormInput = z.input<typeof schema>
 
 
 export default function TransactionsPage() {
@@ -74,7 +75,7 @@ export default function TransactionsPage() {
 
   const firstCategoryId = categoriesQuery.data?.[0]?.id ?? null
 
-  const form = useForm<FormValues>({
+  const form = useForm<FormInput, unknown, FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       amount: 0,
