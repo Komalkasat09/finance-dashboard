@@ -98,6 +98,25 @@ export default function LoginPage() {
               {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {isPending ? "Signing in" : "Sign in"}
             </Button>
+
+            <div className="mt-6 space-y-3 rounded-lg border border-slate-700 bg-slate-800/50 p-4">
+              <p className="text-xs font-semibold text-slate-300 uppercase tracking-wide">Demo Credentials</p>
+              <div className="space-y-2 text-xs">
+                <div>
+                  <p className="text-slate-400">Admin</p>
+                  <p className="font-mono text-slate-300">admin@example.com / Password123</p>
+                </div>
+                <div>
+                  <p className="text-slate-400">Analyst</p>
+                  <p className="font-mono text-slate-300">analyst@example.com / Password123</p>
+                </div>
+                <div>
+                  <p className="text-slate-400">Viewer</p>
+                  <p className="font-mono text-slate-300">viewer@example.com / Password123</p>
+                </div>
+              </div>
+            </div>
+
             <p className="text-center text-sm text-slate-400">
               New here?{" "}
               <Link href="/signup" className="text-emerald-300 underline-offset-4 hover:underline">
