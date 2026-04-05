@@ -70,7 +70,7 @@ export default function DashboardPage() {
                     <AreaChart data={data.monthly_trend}>
                       <XAxis dataKey="month" tickLine={false} axisLine={false} />
                       <YAxis tickFormatter={(value) => formatAmount(value)} tickLine={false} axisLine={false} />
-                      <Tooltip formatter={(value: number) => formatAmount(value)} />
+                      <Tooltip formatter={(value) => typeof value === 'number' ? formatAmount(value) : value} />
                       <Area type="monotone" dataKey="income" stroke="#10B981" fill="#10B981" fillOpacity={0.18} strokeWidth={2} />
                       <Area type="monotone" dataKey="expenses" stroke="#F43F5E" fill="#F43F5E" fillOpacity={0.18} strokeWidth={2} />
                     </AreaChart>
