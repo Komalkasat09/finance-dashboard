@@ -64,8 +64,9 @@ app.add_middleware(
         "http://localhost:3001",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
-        "https://finance-dashboard-one-lovat.vercel.app",  # add your deployed frontend
+        "https://finance-dashboard-beta-livid.vercel.app",  # add your deployed frontend
     ],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
