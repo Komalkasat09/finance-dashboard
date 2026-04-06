@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -40,7 +41,13 @@ export default function UsersPage() {
 
   const updateUser = useMutation({
     mutationFn: async ({ userId, payload }: { userId: string; payload: Partial<User> }) => api.put(`/users/${userId}`, payload),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["users"] })
+      toast.success("User updated")
+    },
+    onError: () => {
+      toast.error("Unable to update user")
+    },
   })
 
   const items = Array.isArray(usersQuery.data) ? usersQuery.data : usersQuery.data?.items ?? []

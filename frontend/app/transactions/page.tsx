@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, useWatch } from "react-hook-form"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Download, Edit, Plus, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 import { AppLayout } from "@/components/layout/AppLayout"
 import { Button } from "@/components/ui/button"
@@ -129,6 +130,10 @@ export default function TransactionsPage() {
       await queryClient.invalidateQueries({ queryKey: ["transactions"] })
       setDialogOpen(false)
       setEditing(null)
+      toast.success(editing ? "Transaction updated" : "Transaction created")
+    },
+    onError: () => {
+      toast.error("Unable to save transaction")
     },
   })
 
@@ -151,12 +156,22 @@ export default function TransactionsPage() {
       anchor.download = "transactions.csv"
       anchor.click()
       URL.revokeObjectURL(url)
+      toast.success("CSV exported")
+    },
+    onError: () => {
+      toast.error("Unable to export CSV")
     },
   })
 
   const deleteMutation = useMutation({
     mutationFn: async (transactionId: string) => api.delete(`/transactions/${transactionId}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["transactions"] }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["transactions"] })
+      toast.success("Transaction deleted")
+    },
+    onError: () => {
+      toast.error("Unable to delete transaction")
+    },
   })
 
   const canMutate = me.data?.role === "ADMIN" || me.data?.role === "ANALYST"
@@ -275,7 +290,7 @@ export default function TransactionsPage() {
             <form className="space-y-4" onSubmit={submitForm}>
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
-                <Input id="amount" type="number" step="0.01" {...form.register("amount")} />
+                <Input id="amount" type="number" step="0.01" {...form.register("amount", { valueAsNumber: true })} />
               </div>
               <div className="space-y-2">
                 <Label>Type</Label>
