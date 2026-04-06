@@ -99,7 +99,7 @@ export default function LoginPage() {
             </Button>
 
             <div className="mt-6 space-y-3 rounded-lg border border-slate-700 bg-slate-800/50 p-4">
-              <p className="text-xs font-semibold text-slate-300 uppercase tracking-wide">Demo Credentials</p>
+              <p className="text-xs font-semibold text-slate-300 uppercase tracking-wide">Please use Demo Credentials for admin and analysts</p>
               <div className="space-y-2">
                 <p className="text-sm font-semibold">DEMO CREDENTIALS</p>
 

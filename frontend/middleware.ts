@@ -5,8 +5,9 @@ export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("access_token")?.value
   const { pathname } = request.nextUrl
   const isAuthRoute = pathname === "/login" || pathname === "/signup"
+  const isPublicRoute = pathname === "/" || isAuthRoute
 
-  if (!accessToken && !isAuthRoute) {
+  if (!accessToken && !isPublicRoute) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
