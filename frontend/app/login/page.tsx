@@ -100,18 +100,22 @@ export default function LoginPage() {
 
             <div className="mt-6 space-y-3 rounded-lg border border-slate-700 bg-slate-800/50 p-4">
               <p className="text-xs font-semibold text-slate-300 uppercase tracking-wide">Demo Credentials</p>
-              <div className="space-y-2 text-xs">
+              <div className="space-y-2">
+                <p className="text-sm font-semibold">DEMO CREDENTIALS</p>
+
                 <div>
-                  <p className="text-slate-400">Admin</p>
-                  <p className="font-mono text-slate-300">admin@example.com / Password123</p>
+                  <p className="font-medium">Admin</p>
+                  <p>admin@finance.dev / Admin@1234</p>
                 </div>
+
                 <div>
-                  <p className="text-slate-400">Analyst</p>
-                  <p className="font-mono text-slate-300">analyst@example.com / Password123</p>
+                  <p className="font-medium">Analyst</p>
+                  <p>analyst@finance.dev / Analyst@1234</p>
                 </div>
+
                 <div>
-                  <p className="text-slate-400">Viewer</p>
-                  <p className="font-mono text-slate-300">viewer@example.com / Password123</p>
+                  <p className="font-medium">Viewer</p>
+                  <p>viewer@finance.dev / Viewer@1234</p>
                 </div>
               </div>
             </div>
