@@ -13,9 +13,7 @@ from app.core.database import Base
 from app.core.security import hash_password
 from app.models import Category, Transaction, TransactionType, User, UserRole
 
-
 fake = Faker()
-
 
 USER_SEEDS = [
     ("admin@finance.dev", "Admin@1234", UserRole.ADMIN, "Finance Admin"),
@@ -49,70 +47,84 @@ def _random_transaction_date() -> date:
     return start + timedelta(days=random.randint(0, 180))
 
 
-def main() -> None:
+def seed_users() -> None:
+    """
+    Safe/idempotent production seed.
+    Can be called during app startup on Render free plan.
+    """
     engine = _build_engine()
     SessionLocal = sessionmaker(bind=engine)
     session = SessionLocal()
 
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
 
-    admin_exists = session.query(User).filter(User.email == "admin@finance.dev").first()
-    if admin_exists is not None:
-        print("Seed data already exists. Skipping creation.")
-        return
+        admin_exists = session.query(User).filter(User.email == "admin@finance.dev").first()
+        if admin_exists is not None:
+            print("Seed data already exists. Skipping creation.")
+            return
 
-    users: dict[UserRole, User] = {}
-    for email, password, role, full_name in USER_SEEDS:
-        user = User(
-            email=email,
-            hashed_password=hash_password(password),
-            full_name=full_name,
-            role=role,
-            is_active=True,
-        )
-        session.add(user)
-        users[role] = user
+        users: dict[UserRole, User] = {}
+        for email, password, role, full_name in USER_SEEDS:
+            user = User(
+                email=email,
+                hashed_password=hash_password(password),
+                full_name=full_name,
+                role=role,
+                is_active=True,
+            )
+            session.add(user)
+            users[role] = user
 
-    session.commit()
+        session.commit()
 
-    category_map: dict[str, Category] = {}
-    for name, color_hex, icon, _, _ in CATEGORY_SEEDS:
-        category = Category(name=name, color_hex=color_hex, icon=icon)
-        session.add(category)
-        category_map[name] = category
+        category_map: dict[str, Category] = {}
+        for name, color_hex, icon, _, _ in CATEGORY_SEEDS:
+            category = Category(name=name, color_hex=color_hex, icon=icon)
+            session.add(category)
+            category_map[name] = category
 
-    session.commit()
+        session.commit()
 
-    admin_user = users[UserRole.ADMIN]
-    for _ in range(200):
-        name, _, _, amount_range, tx_type = random.choice(CATEGORY_SEEDS)
-        category = category_map[name]
-        amount = Decimal(str(random.randint(amount_range[0], amount_range[1])))
-        if tx_type == TransactionType.EXPENSE:
+        admin_user = users[UserRole.ADMIN]
+        for _ in range(200):
+            name, _, _, amount_range, tx_type = random.choice(CATEGORY_SEEDS)
+            category = category_map[name]
             amount = Decimal(str(random.randint(amount_range[0], amount_range[1])))
-        transaction = Transaction(
-            user_id=admin_user.id,
-            amount=amount,
-            type=tx_type,
-            category_id=category.id,
-            date=_random_transaction_date(),
-            notes=fake.sentence(nb_words=6),
-            created_by=admin_user.id,
-        )
-        session.add(transaction)
 
-    session.commit()
+            transaction = Transaction(
+                user_id=admin_user.id,
+                amount=amount,
+                type=tx_type,
+                category_id=category.id,
+                date=_random_transaction_date(),
+                notes=fake.sentence(nb_words=6),
+                created_by=admin_user.id,
+            )
+            session.add(transaction)
 
-    print("\nFinance Dashboard seed complete\n")
-    print(f"Users: {session.query(User).count()}")
-    print(f"Categories: {session.query(Category).count()}")
-    print(f"Transactions: {session.query(Transaction).count()}")
-    print("\nLogin credentials:\n")
-    print("Role       | Email                    | Password")
-    print("-----------|--------------------------|-----------")
-    print("Admin      | admin@finance.dev        | Admin@1234")
-    print("Analyst    | analyst@finance.dev      | Analyst@1234")
-    print("Viewer     | viewer@finance.dev       | Viewer@1234")
+        session.commit()
+
+        print("\nFinance Dashboard seed complete\n")
+        print(f"Users: {session.query(User).count()}")
+        print(f"Categories: {session.query(Category).count()}")
+        print(f"Transactions: {session.query(Transaction).count()}")
+        print("\nLogin credentials:\n")
+        print("Role       | Email                    | Password")
+        print("-----------|--------------------------|-----------")
+        print("Admin      | admin@finance.dev        | Admin@1234")
+        print("Analyst    | analyst@finance.dev      | Analyst@1234")
+        print("Viewer     | viewer@finance.dev       | Viewer@1234")
+
+    except Exception as e:
+        print(f"Seed failed: {e}")
+        raise
+    finally:
+        session.close()
+
+
+def main() -> None:
+    seed_users()
 
 
 if __name__ == "__main__":
