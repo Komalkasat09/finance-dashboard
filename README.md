@@ -165,8 +165,4 @@ The backend is layered as routes -> services -> models to separate transport log
 
 ## Running Tests
 ```bash
-docker compose exec backend pytest tests/ -v
-```
-
-## API Docs
-Interactive Swagger docs are available at http://localhost:8000/docs
+docker compose exec backend pytest tests/
